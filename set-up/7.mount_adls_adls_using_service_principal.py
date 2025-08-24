@@ -26,16 +26,16 @@ configs = {"fs.azure.account.auth.type": "OAuth",
 
 dbutils.fs.mount(
   source = "abfss://demo@formula1dlrjsa.dfs.core.windows.net/",
-  mount_point = "/mnt/formula1dl/demo",
+  mount_point = "/mnt/formula1dlrjsa/demo",
   extra_configs = configs)
 
 # COMMAND ----------
 
-display(dbutils.fs.ls("/mnt/formula1dl/demo"))
+display(dbutils.fs.ls("/mnt/formula1dlrjsa/demo"))
 
 # COMMAND ----------
 
-display(spark.read.csv("/mnt/formula1dl/demo/circuits.csv"))
+display(spark.read.csv("/mnt/formula1dlrjsa/demo/circuits.csv"))
 
 # COMMAND ----------
 
@@ -44,7 +44,7 @@ display(dbutils.fs.mounts())
 # COMMAND ----------
 
 # unmount
-dbutils.fs.unmount("/mnt/formula1dl/demo")
+dbutils.fs.unmount("/mnt/formula1dlrjsa/demo")
 display(dbutils.fs.mounts())
 
 # COMMAND ----------
