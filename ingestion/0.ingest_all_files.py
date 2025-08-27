@@ -60,7 +60,3 @@ v_result = dbutils.notebook.run("8.ingest_qualifying_file", 0, {"p_data_source":
 # COMMAND ----------
 
 v_result
-
-# COMMAND ----------
-
-
