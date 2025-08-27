@@ -71,7 +71,16 @@ display(final_df.filter("race_year == 2020 and race_name == 'Abu Dhabi Grand Pri
 
 # COMMAND ----------
 
-final_df.write.mode("overwrite").parquet(f"{presentation_folder_path}/race_results")
+final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_presentation.race_results")
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT * from f1_presentation.race_results LIMIT 10;
+
+# COMMAND ----------
+
+# MAGIC %sql DESC DATABASE f1_presentation;
 
 # COMMAND ----------
 
