@@ -4,6 +4,19 @@
 
 # COMMAND ----------
 
+dbutils.widgets.text("p_data_source", "")
+v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ##### Step 1 - Read the CSV file using the spark dataframe reader API
 
@@ -28,7 +41,7 @@ races_schema = StructType(fields=[StructField("raceId", IntegerType(), False),
 races_df = spark.read \
 .option("header", True) \
 .schema(races_schema) \
-.csv("/mnt/formula1dlrjsa/raw/races.csv")
+.csv(f"{raw_folder_path}/races.csv")
 
 # COMMAND ----------
 
@@ -37,12 +50,16 @@ races_df = spark.read \
 
 # COMMAND ----------
 
-from pyspark.sql.functions import current_timestamp, to_timestamp, concat, col, lit
+from pyspark.sql.functions import to_timestamp, concat, col, lit
 
 # COMMAND ----------
 
-races_with_timestamp_df = races_df.withColumn("ingestion_date", current_timestamp()) \
-                                  .withColumn("race_timestamp", to_timestamp(concat(col('date'), lit(' '), col('time')), 'yyyy-MM-dd HH:mm:ss'))
+races_with_timestamp_df = races_df.withColumn("race_timestamp", to_timestamp(concat(col('date'), lit(' '), col('time')), 'yyyy-MM-dd HH:mm:ss')) \
+.withColumn("data_source", lit(v_data_source))
+
+# COMMAND ----------
+
+races_with_ingestion_date_df = add_ingestion_date(races_with_timestamp_df)
 
 # COMMAND ----------
 
@@ -51,7 +68,7 @@ races_with_timestamp_df = races_df.withColumn("ingestion_date", current_timestam
 
 # COMMAND ----------
 
-races_selected_df = races_with_timestamp_df.select(col('raceId').alias('race_id'), col('year').alias('race_year'), 
+races_selected_df = races_with_ingestion_date_df.select(col('raceId').alias('race_id'), col('year').alias('race_year'), 
                                                    col('round'), col('circuitId').alias('circuit_id'),col('name'), col('ingestion_date'), col('race_timestamp'))
 
 # COMMAND ----------
@@ -61,8 +78,8 @@ races_selected_df = races_with_timestamp_df.select(col('raceId').alias('race_id'
 
 # COMMAND ----------
 
-races_selected_df.write.mode('overwrite').partitionBy('race_year').parquet('/mnt/formula1dlrjsa/processed/races')
+races_selected_df.write.mode('overwrite').partitionBy('race_year').parquet(f'{processed_folder_path}/races')
 
 # COMMAND ----------
 
-
+dbutils.notebook.exit("Success")

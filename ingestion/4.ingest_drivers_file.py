@@ -4,6 +4,19 @@
 
 # COMMAND ----------
 
+dbutils.widgets.text("p_data_source", "")
+v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ##### Step 1 - Read the JSON file using the spark dataframe reader API
 
@@ -34,7 +47,7 @@ drivers_schema = StructType(fields=[StructField("driverId", IntegerType(), False
 
 drivers_df = spark.read \
 .schema(drivers_schema) \
-.json("/mnt/formula1dlrjsa/raw/drivers.json")
+.json(f"{raw_folder_path}/drivers.json")
 
 # COMMAND ----------
 
@@ -47,14 +60,18 @@ drivers_df = spark.read \
 
 # COMMAND ----------
 
-from pyspark.sql.functions import col, concat, current_timestamp, lit
+from pyspark.sql.functions import col, concat, lit
 
 # COMMAND ----------
 
-drivers_with_columns_df = drivers_df.withColumnRenamed("driverId", "driver_id") \
+drivers_with_ingestion_date_df = add_ingestion_date(drivers_df)
+
+# COMMAND ----------
+
+drivers_with_columns_df = drivers_with_ingestion_date_df.withColumnRenamed("driverId", "driver_id") \
                                     .withColumnRenamed("driverRef", "driver_ref") \
-                                    .withColumn("ingestion_date", current_timestamp()) \
-                                    .withColumn("name", concat(col("name.forename"), lit(" "), col("name.surname")))
+                                    .withColumn("name", concat(col("name.forename"), lit(" "), col("name.surname"))) \
+                                    .withColumn("data_source", lit(v_data_source))
 
 # COMMAND ----------
 
@@ -75,4 +92,8 @@ drivers_final_df = drivers_with_columns_df.drop(col("url"))
 
 # COMMAND ----------
 
-drivers_final_df.write.mode("overwrite").parquet("/mnt/formula1dlrjsa/processed/drivers")
+drivers_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/drivers")
+
+# COMMAND ----------
+
+dbutils.notebook.exit("Success")

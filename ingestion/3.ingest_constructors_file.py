@@ -4,6 +4,19 @@
 
 # COMMAND ----------
 
+dbutils.widgets.text("p_data_source", "")
+v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ##### Step 1 - Read the JSON file using the spark dataframe reader
 
@@ -15,7 +28,7 @@ constructors_schema = "constructorId INT, constructorRef STRING, name STRING, na
 
 constructor_df = spark.read \
 .schema(constructors_schema) \
-.json("/mnt/formula1dlrjsa/raw/constructors.json")
+.json(f"{raw_folder_path}/constructors.json")
 
 # COMMAND ----------
 
@@ -37,13 +50,17 @@ constructor_dropped_df = constructor_df.drop(col('url'))
 
 # COMMAND ----------
 
-from pyspark.sql.functions import current_timestamp
+from pyspark.sql.functions import lit
 
 # COMMAND ----------
 
-constructor_final_df = constructor_dropped_df.withColumnRenamed("constructorId", "constructor_id") \
+constructor_renamed_df = constructor_dropped_df.withColumnRenamed("constructorId", "constructor_id") \
                                              .withColumnRenamed("constructorRef", "constructor_ref") \
-                                             .withColumn("ingestion_date", current_timestamp())
+                                             .withColumn("data_source", lit(v_data_source))
+
+# COMMAND ----------
+
+constructor_final_df = add_ingestion_date(constructor_renamed_df)
 
 # COMMAND ----------
 
@@ -52,4 +69,8 @@ constructor_final_df = constructor_dropped_df.withColumnRenamed("constructorId",
 
 # COMMAND ----------
 
-constructor_final_df.write.mode("overwrite").parquet("/mnt/formula1dlrjsa/processed/constructors")
+constructor_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/constructors")
+
+# COMMAND ----------
+
+dbutils.notebook.exit("Success")
