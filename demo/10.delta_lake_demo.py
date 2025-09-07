@@ -86,7 +86,7 @@ results_df.write.format("delta").mode("overwrite").partitionBy("constructorId").
 
 from delta.tables import DeltaTable
 
-deltaTable = DeltaTable.forPath(spark, "/mnt/formula1dl/demo/results_managed")
+deltaTable = DeltaTable.forPath(spark, "/mnt/formula1dlrjsa/demo/results_managed")
 
 deltaTable.update("position <= 10", { "points": "21 - position" } ) 
 
@@ -110,7 +110,7 @@ deltaTable.update("position <= 10", { "points": "21 - position" } )
 
 from delta.tables import DeltaTable
 
-deltaTable = DeltaTable.forPath(spark, "/mnt/formula1dl/demo/results_managed")
+deltaTable = DeltaTable.forPath(spark, "/mnt/formula1dlrjsa/demo/results_managed")
 
 deltaTable.delete("points = 0") 
 
