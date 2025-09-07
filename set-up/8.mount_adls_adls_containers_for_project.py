@@ -59,4 +59,8 @@ mount_adls("formula1dlrjsa","presentation")
 
 # COMMAND ----------
 
+mount_adls("formula1dlrjsa","demo")
+
+# COMMAND ----------
+
 
